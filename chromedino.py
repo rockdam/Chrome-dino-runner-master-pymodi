@@ -5,6 +5,7 @@ import modi
 import os
 import random
 import threading
+import time
 
 import pygame
 bundle = modi.MODI()
@@ -12,6 +13,9 @@ bundle.modules
 # Global Constants
 
 btn = bundle.buttons[0]
+speaker =bundle.speakers[0]
+led= bundle.leds[0]
+speakerFlag = True  # 한번만 재생하고 아웃. 왜냐면 장애물을 계속 충돌하기 때문 
 pygame.init()
 
 
@@ -102,7 +106,7 @@ class Dinosaur:
         #     self.dino_duck = False
         #     self.dino_run = False
         #     self.dino_jump = True
-        elif (doubleClickInput) and not self.dino_jum:
+        elif (doubleClickInput) and not self.dino_jump:
             self.dino_duck = True
             self.dino_run = False
             self.dino_jump = False
@@ -268,8 +272,9 @@ def main():
                     quit()
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_u:
                     unpause()
-
+   
     while run:
+       
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
@@ -284,34 +289,37 @@ def main():
             SCREEN.fill((0, 0, 0))
         userInput = pygame.key.get_pressed() #key 값을 받는데 
 
-        #user code 
+        # user code 
         clickInput = btn.clicked
         doubleClickInput=btn.double_clicked
         player.draw(SCREEN)
-        ##################
+        ##################n
         player.update(userInput,clickInput,doubleClickInput)
 
         if len(obstacles) == 0:
             if random.randint(0, 2) == 0:
-                obstacles.append(SmallCactus(SMALL_CACTUS))
+                obstacles.append(SmallCactus(SMALL_CACTUS)) 
             elif random.randint(0, 2) == 1:
                 obstacles.append(LargeCactus(LARGE_CACTUS))
             elif random.randint(0, 2) == 2:
                 obstacles.append(Bird(BIRD))
-
+    
+    #100점 , 200 점 ,300점 일 때 소리나게 . 
+    #display game over 및 소리 (for 문 학습)
+    
         for obstacle in obstacles:
             obstacle.draw(SCREEN)
             obstacle.update()
-            if player.dino_rect.colliderect(obstacle.rect):
+            if player.dino_rect.colliderect(obstacle.rect): #게임 종료 시 
                 pygame.time.delay(2000)
                 death_count += 1
-                menu(death_count)
-
-        background()
-
+                speakerFlag = True
+                menu(death_count)      
+        
+        background()   
         cloud.draw(SCREEN)
         cloud.update()
-
+# 게임 종료시 음악 소리 -> 함수화 필요 
         score()
 
         clock.tick(30)
@@ -322,6 +330,8 @@ def menu(death_count):
     global points
     global FONT_COLOR
     run = True
+    led.rgb = (0,0,100)
+    
     while run:
         current_time = datetime.datetime.now().hour
         if 7 < current_time < 19:
@@ -336,7 +346,9 @@ def menu(death_count):
             text = font.render("Press any Key to Start", True, FONT_COLOR)
         elif death_count > 0:
             text = font.render("Press any Key to Restart", True, FONT_COLOR)
+             #기능 추가 점수 -> 피할 때 소리 -> 일시정지 -> 게임 종료 
             score = font.render("Your Score: " + str(points), True, FONT_COLOR)
+           
             scoreRect = score.get_rect()
             scoreRect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 50)
             SCREEN.blit(score, scoreRect)
@@ -346,15 +358,24 @@ def menu(death_count):
             with open("score.txt", "r") as f:
                 score = (
                     f.read()
-                )  # Read all file in case values are not on a single line
-                score_ints = [int(x) for x in score.split()]  # Convert strings to ints
-            highscore = max(score_ints)  # sum all elements of the list
+                )  
+                score_ints = [int(x) for x in score.split()]  
+            highscore = max(score_ints)  
             hs_score_text = font.render(
                 "High Score : " + str(highscore), True, FONT_COLOR
             )
             hs_score_rect = hs_score_text.get_rect()
             hs_score_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100)
             SCREEN.blit(hs_score_text, hs_score_rect)
+            pitch = [523,587,659,698,783,880,987]
+            song = [0,2,4,0,2,4,5,5,5,4]
+            if(speakerFlag) :
+                for i in song:
+                    speaker.tune = pitch[i],50 
+                    led.rgb = (100,0,0)
+                    time.sleep(0.3)
+                    spekarFlag = False
+                speaker.turn_off()   
         textRect = text.get_rect()
         textRect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
         SCREEN.blit(text, textRect)
