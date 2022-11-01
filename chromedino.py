@@ -13,12 +13,15 @@ bundle.modules
 # Global Constants
 
 btn = bundle.buttons[0]
-speaker =bundle.speakers[0]
+#speaker =bundle.speakers[0]
 led= bundle.leds[0]
-speakerFlag = True  # 한번만 재생하고 아웃. 왜냐면 장애물을 계속 충돌하기 때문 
+dial = bundle.dials[0]
+# 한번만 재생하고 아웃. 왜냐면 장애물을 계속 충돌하기 때문 
 pygame.init()
 
-
+endMenuGameMusic = False
+playGameMusic= False
+startMenuGameMusic= False
 SCREEN_HEIGHT = 600
 SCREEN_WIDTH = 1100
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -83,7 +86,7 @@ class Dinosaur:
         self.dino_rect.x = self.X_POS
         self.dino_rect.y = self.Y_POS
 
-    def update(self, userInput,clickInput,doubleClickInput):
+    def update(self, userInput,clickInput,dialDegree):
         if self.dino_duck:
             self.duck()
         if self.dino_run:
@@ -106,7 +109,7 @@ class Dinosaur:
         #     self.dino_duck = False
         #     self.dino_run = False
         #     self.dino_jump = True
-        elif (doubleClickInput) and not self.dino_jump:
+        elif (dialDegree>50) and not self.dino_jump:
             self.dino_duck = True
             self.dino_run = False
             self.dino_jump = False
@@ -211,6 +214,7 @@ class Bird(Obstacle):
 
 def main():
     global game_speed, x_pos_bg, y_pos_bg, points, obstacles
+    led.rgb = (0,0,100) # 시작시 파란색
     run = True
     clock = pygame.time.Clock()
     player = Dinosaur()
@@ -223,7 +227,7 @@ def main():
     obstacles = []
     death_count = 0
     pause = False
-
+   
     def score():
         global points, game_speed
         points += 1
@@ -256,6 +260,7 @@ def main():
         run = True
 
     def paused():
+      
         nonlocal pause
         pause = True
         font = pygame.font.Font("freesansbold.ttf", 30)
@@ -291,10 +296,11 @@ def main():
 
         # user code 
         clickInput = btn.clicked
-        doubleClickInput=btn.double_clicked
+        #doubleClickInput=btn.double_clicked
+        dialDegree = dial.degree
         player.draw(SCREEN)
         ##################n
-        player.update(userInput,clickInput,doubleClickInput)
+        player.update(userInput,clickInput,dialDegree)
 
         if len(obstacles) == 0:
             if random.randint(0, 2) == 0:
@@ -313,7 +319,8 @@ def main():
             if player.dino_rect.colliderect(obstacle.rect): #게임 종료 시 
                 pygame.time.delay(2000)
                 death_count += 1
-                speakerFlag = True
+               
+                print("speker")
                 menu(death_count)      
         
         background()   
@@ -327,12 +334,21 @@ def main():
 
 
 def menu(death_count):
-    global points
+    global points, speakerFlag
     global FONT_COLOR
     run = True
-    led.rgb = (0,0,100)
-    
+   
+    # t2 = threading.Thread(target=playBackGroundMusic)
+    # t2.start() # 배경 음악 재생
+    print("hello")
+
     while run:
+          #### 시작 음악 재생 
+        
+        endMenuGameMusic = False
+        playGameMusic= True 
+        startMenuGameMusic = False
+
         current_time = datetime.datetime.now().hour
         if 7 < current_time < 19:
             FONT_COLOR=(0,0,0)
@@ -344,11 +360,25 @@ def menu(death_count):
 
         if death_count == 0:
             text = font.render("Press any Key to Start", True, FONT_COLOR)
+            led.rgb = (0,0,100) # 시작시 파란색
+            #### 시작 메뉴 음악 재생 
+            endMenuGameMusic = False
+            playGameMusic= True 
+            startMenuGameMusic = False
+            ###############
         elif death_count > 0:
             text = font.render("Press any Key to Restart", True, FONT_COLOR)
              #기능 추가 점수 -> 피할 때 소리 -> 일시정지 -> 게임 종료 
             score = font.render("Your Score: " + str(points), True, FONT_COLOR)
+            led.rgb = (100,0,0) # 시작시 빨간색
+
+            
+            #### 재시작 음악 재생 
+            endMenuGameMusic = True
+            playGameMusic= False 
+            startMenuGameMusic = False
            
+            ############
             scoreRect = score.get_rect()
             scoreRect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 50)
             SCREEN.blit(score, scoreRect)
@@ -367,15 +397,10 @@ def menu(death_count):
             hs_score_rect = hs_score_text.get_rect()
             hs_score_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100)
             SCREEN.blit(hs_score_text, hs_score_rect)
-            pitch = [523,587,659,698,783,880,987]
-            song = [0,2,4,0,2,4,5,5,5,4]
-            if(speakerFlag) :
-                for i in song:
-                    speaker.tune = pitch[i],50 
-                    led.rgb = (100,0,0)
-                    time.sleep(0.3)
-                    spekarFlag = False
-                speaker.turn_off()   
+            # pitch = [523,587,659,698,783,880,987]
+            # song = [0,2,4,0,2,4,5,5,5,4]
+
+           
         textRect = text.get_rect()
         textRect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
         SCREEN.blit(text, textRect)
@@ -386,10 +411,34 @@ def menu(death_count):
                 run = False
                 pygame.display.quit()
                 pygame.quit()
+               # t2.join() # 메인 쓰레드 합류
                 exit()
             if event.type == pygame.KEYDOWN:
                 main()
 
-
+#백그라운드 뮤직 함수
+#-> 쓰레드로 동작 t2.
+# def playBackGroundMusic():
+#     global endMenuGameMusic, playGameMusic,startMenuGameMusic
+#     while True:
+#         if playGameMusic:
+#             #음악재생 
+#             print("playGameMusic")
+#             playGameMusic=False
+            
+#         elif startMenuGameMusic:
+#             #시작 메뉴 음악 
+#             print("startGameMusic")
+#             startMenuGameMusic=False
+#         elif endMenuGameMusic:
+#             #종료 메뉴 음악
+#             print("endMenugmame")
+#             endMenuGameMusic=False
+#             for i in song:
+#                 speaker.tune = pitch[i],50 
+#                 led.rgb = (100,0,0)
+#                 time.sleep(0.3)            
+#             speaker.turn_off()   
+          
 t1 = threading.Thread(target=menu(death_count=0), daemon=True)
 t1.start()
