@@ -96,31 +96,27 @@ class Dinosaur:
 
         if self.step_index >= 10:
             self.step_index = 0
+            
+#   ___|   _ \   __ \   ____| 
+#  |      |   |  |   |  __|   
+#  |      |   |  |   |  |     
+# \____| \___/  ____/  _____| 
+########################################################################################################  
+# 공룡이 움직이는 방법을 설정해봐요 . 현재는 클릭 시 점프 , 다이얼이 50이상일 때 고개를 숙여요. 나만의 코드를 작성해보세요. (추가로 마이크 모듈이나 환경 모듈도 추가할 수 있어요!)                
         if(clickInput == True )and not self.dino_jump:
             self.dino_jump= True
             self.dino_run = False
             self.dino_jump = True
-  
-        if (userInput[pygame.K_UP]) and not self.dino_jump:
-            self.dino_duck = False
-            self.dino_run = False
-            self.dino_jump = True
-        # if (userInput[pygame.K_UP] or userInput[pygame.K_SPACE]) and not self.dino_jump:
-        #     self.dino_duck = False
-        #     self.dino_run = False
-        #     self.dino_jump = True
         elif (dialDegree>50) and not self.dino_jump:
             self.dino_duck = True
             self.dino_run = False
             self.dino_jump = False
-        elif userInput[pygame.K_DOWN] and not self.dino_jump:
-            self.dino_duck = True
-            self.dino_run = False
-            self.dino_jump = False
-        elif not (self.dino_jump or userInput[pygame.K_DOWN]):
+        elif(dialDegree<50) and not self.dino_jump:
             self.dino_duck = False
             self.dino_run = True
             self.dino_jump = False
+
+##############################################################################################            
 
     def duck(self):
         self.image = self.duck_img[self.step_index // 5]
@@ -293,15 +289,19 @@ def main():
         else:
             SCREEN.fill((0, 0, 0))
         userInput = pygame.key.get_pressed() #key 값을 받는데 
-
-        # user code 
+#   ___|   _ \   __ \   ____| 
+#  |      |   |  |   |  __|   
+#  |      |   |  |   |  |     
+# \____| \___/  ____/  _____| 
+########################################################################################################  
+# 공룡이 움직이는 방법을 설정해봐요 . 현재는 클릭 시 점프 , 다이얼이 50이상일 때 고개를 숙여요. 나만의 코드를 작성해보세요. (추가로 마이크 모듈이나 환경 모듈도 추가할 수 있어요!)    
+                                                                                                                                                                                             
         clickInput = btn.clicked
-        #doubleClickInput=btn.double_clicked
         dialDegree = dial.degree
         player.draw(SCREEN)
-        ##################n
         player.update(userInput,clickInput,dialDegree)
 
+##########################################################################################################
         if len(obstacles) == 0:
             if random.randint(0, 2) == 0:
                 obstacles.append(SmallCactus(SMALL_CACTUS)) 
@@ -309,14 +309,11 @@ def main():
                 obstacles.append(LargeCactus(LARGE_CACTUS))
             elif random.randint(0, 2) == 2:
                 obstacles.append(Bird(BIRD))
-    
-    #100점 , 200 점 ,300점 일 때 소리나게 . 
-    #display game over 및 소리 (for 문 학습)
-    
+   
         for obstacle in obstacles:
             obstacle.draw(SCREEN)
             obstacle.update()
-            if player.dino_rect.colliderect(obstacle.rect): #게임 종료 시 
+            if player.dino_rect.colliderect(obstacle.rect):
                 pygame.time.delay(2000)
                 death_count += 1
                
@@ -326,7 +323,6 @@ def main():
         background()   
         cloud.draw(SCREEN)
         cloud.update()
-# 게임 종료시 음악 소리 -> 함수화 필요 
         score()
 
         clock.tick(30)
@@ -337,10 +333,6 @@ def menu(death_count):
     global points, speakerFlag
     global FONT_COLOR
     run = True
-   
-    # t2 = threading.Thread(target=playBackGroundMusic)
-    # t2.start() # 배경 음악 재생
-    print("hello")
 
     while run:
           #### 시작 음악 재생 
@@ -360,25 +352,37 @@ def menu(death_count):
 
         if death_count == 0:
             text = font.render("Press any Key to Start", True, FONT_COLOR)
+         
+                                                                                             
+#   ___|   _ \   __ \   ____| 
+#  |      |   |  |   |  __|   
+#  |      |   |  |   |  |     
+# \____| \___/  ____/  _____| 
+                            
+ #################################################################################
+#처음 시작 시 LED를 색상을 설정해주세요. 현재는 파란색으로 시작해요.나만의 코드를 작성해보세요. (추가로 디스플레이 모듈, 모터 모듈도 추가할 수 있어요!)                                                                                   
+                                                                                    
+
             led.rgb = (0,0,100) # 시작시 파란색
-            #### 시작 메뉴 음악 재생 
-            endMenuGameMusic = False
-            playGameMusic= True 
-            startMenuGameMusic = False
-            ###############
+
+##################################################################################            
         elif death_count > 0:
             text = font.render("Press any Key to Restart", True, FONT_COLOR)
              #기능 추가 점수 -> 피할 때 소리 -> 일시정지 -> 게임 종료 
             score = font.render("Your Score: " + str(points), True, FONT_COLOR)
-            led.rgb = (100,0,0) # 시작시 빨간색
 
+                                                                                                                    
+#   ___|   _ \   __ \   ____| 
+#  |      |   |  |   |  __|   
+#  |      |   |  |   |  |     
+# \____| \___/  ____/  _____| 
+#################################################################################################### 
+# 재 시작 시 LED 색상을 설정해주세요 . 나만의 코드를 작성해보세요. (추가로 디스플레이 모듈, 모터 모듈도 추가할 수 있어요!)                                                                                                        
+                                                                                                        
+
+            led.rgb = (100,0,0) # 시작시 빨간색
+####################################################################################################
             
-            #### 재시작 음악 재생 
-            endMenuGameMusic = True
-            playGameMusic= False 
-            startMenuGameMusic = False
-           
-            ############
             scoreRect = score.get_rect()
             scoreRect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 50)
             SCREEN.blit(score, scoreRect)
@@ -397,8 +401,7 @@ def menu(death_count):
             hs_score_rect = hs_score_text.get_rect()
             hs_score_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100)
             SCREEN.blit(hs_score_text, hs_score_rect)
-            # pitch = [523,587,659,698,783,880,987]
-            # song = [0,2,4,0,2,4,5,5,5,4]
+            
 
            
         textRect = text.get_rect()
@@ -411,34 +414,9 @@ def menu(death_count):
                 run = False
                 pygame.display.quit()
                 pygame.quit()
-               # t2.join() # 메인 쓰레드 합류
                 exit()
             if event.type == pygame.KEYDOWN:
                 main()
-
-#백그라운드 뮤직 함수
-#-> 쓰레드로 동작 t2.
-# def playBackGroundMusic():
-#     global endMenuGameMusic, playGameMusic,startMenuGameMusic
-#     while True:
-#         if playGameMusic:
-#             #음악재생 
-#             print("playGameMusic")
-#             playGameMusic=False
-            
-#         elif startMenuGameMusic:
-#             #시작 메뉴 음악 
-#             print("startGameMusic")
-#             startMenuGameMusic=False
-#         elif endMenuGameMusic:
-#             #종료 메뉴 음악
-#             print("endMenugmame")
-#             endMenuGameMusic=False
-#             for i in song:
-#                 speaker.tune = pitch[i],50 
-#                 led.rgb = (100,0,0)
-#                 time.sleep(0.3)            
-#             speaker.turn_off()   
-          
+        
 t1 = threading.Thread(target=menu(death_count=0), daemon=True)
 t1.start()
